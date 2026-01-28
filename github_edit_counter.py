@@ -52,6 +52,7 @@ def get_repos_org(org):
 
 def get_commit_contributions(username, full_repo):
     added, deleted = 0, 0
+    processed_commits = set()  # 중복 커밋 방지
     page = 1
     while True:
         url = f"https://api.github.com/repos/{full_repo}/commits?author={username}&per_page=100&page={page}"
@@ -63,6 +64,13 @@ def get_commit_contributions(username, full_repo):
 
         for commit in data:
             sha = commit["sha"]
+
+            # 이미 처리한 커밋은 건너뛰기
+            if sha in processed_commits:
+                continue
+
+            processed_commits.add(sha)
+
             commit_url = f"https://api.github.com/repos/{full_repo}/commits/{sha}"
             c = requests.get(commit_url, headers=headers).json()
             if "files" in c:
